@@ -4,9 +4,9 @@ import { ArrowRight, Lock, Mail, Share2, Upload } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background w-full">
       {/* Hero Section */}
-      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 border-b border-border">
+      <section className="w-screen  flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 border-b border-border">
         <div className="container px-4 md:px-6 space-y-10 xl:space-y-16">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-4">
@@ -46,7 +46,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 bg-muted/50">
+      <section className="w-screen  flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 bg-muted/50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
@@ -107,7 +107,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32">
+      <section className="w-screen  flex justify-center items-center flex-col py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
@@ -134,7 +134,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full flex justify-center items-center flex-col py-6 border-t border-border mt-auto">
+      <footer className="w-screen  flex justify-center items-center flex-col py-6 border-t border-border mt-auto">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="flex items-center space-x-2">

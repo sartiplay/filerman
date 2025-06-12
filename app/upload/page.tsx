@@ -3,9 +3,9 @@
 import type React from "react";
 
 import { useState, useRef } from "react";
-
+import { toast } from "sonner";
 import { useFileDrop } from "@/hooks/use-file-drop";
-import { uploadFile } from "../actions";
+import { uploadFiles } from "../actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,14 +26,14 @@ import {
   Mail,
   Check,
   AlertCircle,
+  Plus,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
 
 export default function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [method, setMethod] = useState<"link" | "email">("link");
+  const [files, setFiles] = useState<File[]>([]);
+  const [method, setMethod] = useState<"LINK" | "EMAIL">("LINK");
   const [email, setEmail] = useState("");
   const [lockToUser, setLockToUser] = useState("");
   const [isLocked, setIsLocked] = useState(false);
@@ -42,12 +42,14 @@ export default function UploadPage() {
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
-    fileUrl?: string;
+    sessionUrl?: string;
   } | null>(null);
+
+  // Simulated user from Clerk
+  const currentUser = { email: "user@example.com" };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
   const {
     isDragging,
     handleDragEnter,
@@ -58,28 +60,37 @@ export default function UploadPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      setFiles(Array.from(e.target.files));
       setResult(null);
     }
   };
 
-  const handleFilesDrop = (files: FileList) => {
-    if (files.length > 0) {
-      setFile(files[0]);
+  const handleFilesDrop = (fileList: FileList) => {
+    if (fileList.length > 0) {
+      setFiles(Array.from(fileList));
       setResult(null);
     }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!file) {
-      toast("Error: Please select a file to upload");
+    if (files.length === 0) {
+      toast("Please select at least one file to upload");
       return;
     }
 
-    if (method === "email" && (!email || !email.includes("@"))) {
-      toast("Error: Please enter a valid email address");
+    if (method === "EMAIL" && (!email || !email.includes("@"))) {
+      toast("Please enter a valid email address");
+      return;
+    }
+
+    if (isLocked && (!lockToUser || !lockToUser.includes("@"))) {
+      toast("Please enter a valid email address for the allowed user");
       return;
     }
 
@@ -99,9 +110,26 @@ export default function UploadPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
-      formData.append("file", file);
 
-      const response = await uploadFile(formData);
+      // Remove any existing file entries
+      for (const pair of formData.entries()) {
+        if (pair[0] === "file") {
+          formData.delete("file");
+        }
+      }
+
+      // Add all files to formData
+      files.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      // Add isLocked as string
+      formData.set("isLocked", isLocked.toString());
+
+      // Add current user email
+      formData.set("userEmail", currentUser.email);
+
+      const response = await uploadFiles(formData);
 
       clearInterval(progressInterval);
       setUploadProgress(100);
@@ -110,19 +138,19 @@ export default function UploadPage() {
         setResult({
           success: true,
           message: response.message,
-          fileUrl: response.fileUrl,
+          sessionUrl: response.sessionUrl,
         });
 
-        toast("File uploaded successfully!");
+        toast(response.message);
 
         // Reset form after successful upload
         if (formRef.current) {
           formRef.current.reset();
         }
 
-        // Don't reset the file immediately for better UX
+        // Don't reset the files immediately for better UX
         setTimeout(() => {
-          setFile(null);
+          setFiles([]);
           setUploadProgress(0);
         }, 3000);
       } else {
@@ -131,7 +159,7 @@ export default function UploadPage() {
           message: response.message,
         });
 
-        toast("Error: " + response.message);
+        toast(response.message);
       }
     } catch (error) {
       clearInterval(progressInterval);
@@ -141,15 +169,15 @@ export default function UploadPage() {
         message: "An unexpected error occurred. Please try again.",
       });
 
-      toast("Error: An unexpected error occurred. Please try again.");
+      toast("An unexpected error occurred. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const resetForm = () => {
-    setFile(null);
-    setMethod("link");
+    setFiles([]);
+    setMethod("LINK");
     setEmail("");
     setLockToUser("");
     setIsLocked(false);
@@ -160,12 +188,24 @@ export default function UploadPage() {
     }
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) {
+      return bytes + " B";
+    } else if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(1) + " KB";
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    } else {
+      return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+    }
+  };
+
   return (
-    <section className="flex justify-center items-center flex-col w-screen h-screen">
+    <section className="w-screen h-screen flex justify-center items-center flex-col">
       <div className="container max-w-3xl py-10 px-4 md:px-6">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-foreground">
-            Upload File
+            Upload Files
           </h1>
           <p className="mt-2 text-muted-foreground md:text-xl">
             Share your files securely with anyone, anywhere
@@ -174,9 +214,15 @@ export default function UploadPage() {
 
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>Upload a file</CardTitle>
+            <CardTitle>Upload files</CardTitle>
             <CardDescription>
-              Drag and drop your file or click to browse
+              Drag and drop your files or click to browse
+              {currentUser && (
+                <span className="block mt-1 text-sm">
+                  Uploading as{" "}
+                  <span className="font-medium">{currentUser.email}</span>
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,12 +230,12 @@ export default function UploadPage() {
               {/* File Upload Area */}
               <div
                 className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-                ${
-                  isDragging
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50 hover:bg-muted/50"
-                }
-                ${file ? "bg-primary/5 border-primary/50" : ""}`}
+                  ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50 hover:bg-muted/50"
+                  }
+                  ${files.length > 0 ? "bg-primary/5 border-primary/50" : ""}`}
                 onClick={() => fileInputRef.current?.click()}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -203,32 +249,68 @@ export default function UploadPage() {
                   onChange={handleFileChange}
                   className="hidden"
                   disabled={isUploading}
+                  multiple
                 />
 
-                {file ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="rounded-full bg-primary/10 p-3">
-                      <File className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{file.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                {files.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <div className="rounded-full bg-primary/10 p-3">
+                        <File className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="font-medium text-foreground">
+                        {files.length} file(s) selected
                       </p>
+                      {!isUploading && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" /> Add more files
+                        </Button>
+                      )}
                     </div>
-                    {!isUploading && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFile(null);
-                        }}
-                      >
-                        Change file
-                      </Button>
-                    )}
+
+                    <div className="max-h-60 overflow-y-auto">
+                      <ul className="divide-y divide-border">
+                        {files.map((file, index) => (
+                          <li
+                            key={index}
+                            className="py-2 flex justify-between items-center text-left"
+                          >
+                            <div className="flex items-center">
+                              <File className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium truncate max-w-[200px]">
+                                  {file.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatFileSize(file.size)}
+                                </p>
+                              </div>
+                            </div>
+                            {!isUploading && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveFile(index);
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
@@ -236,10 +318,10 @@ export default function UploadPage() {
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
                     <p className="font-medium text-foreground">
-                      Drag and drop your file here or click to browse
+                      Drag and drop your files here or click to browse
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Maximum file size: 10MB
+                      Maximum file size: 10MB per file
                     </p>
                   </div>
                 )}
@@ -270,30 +352,32 @@ export default function UploadPage() {
                   </AlertTitle>
                   <AlertDescription>
                     {result.message}
-                    {result.success && result.fileUrl && method === "link" && (
-                      <div className="mt-2">
-                        <p className="font-medium">Share this link:</p>
-                        <div className="flex mt-1">
-                          <Input
-                            value={`${window.location.origin}${result.fileUrl}`}
-                            readOnly
-                            className="flex-1"
-                          />
-                          <Button
-                            type="button"
-                            className="ml-2"
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                `${window.location.origin}${result.fileUrl}`
-                              );
-                              toast("Link copied to clipboard!");
-                            }}
-                          >
-                            Copy
-                          </Button>
+                    {result.success &&
+                      result.sessionUrl &&
+                      method === "LINK" && (
+                        <div className="mt-2">
+                          <p className="font-medium">Share this link:</p>
+                          <div className="flex mt-1">
+                            <Input
+                              value={`${window.location.origin}${result.sessionUrl}`}
+                              readOnly
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              className="ml-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${window.location.origin}${result.sessionUrl}`
+                                );
+                                toast("Link copied to clipboard");
+                              }}
+                            >
+                              Copy
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </AlertDescription>
                 </Alert>
               )}
@@ -305,23 +389,23 @@ export default function UploadPage() {
                     Sharing Options
                   </h3>
                   <RadioGroup
-                    defaultValue="link"
+                    defaultValue="LINK"
                     value={method}
                     onValueChange={(value) =>
-                      setMethod(value as "link" | "email")
+                      setMethod(value as "LINK" | "EMAIL")
                     }
                     className="flex flex-col space-y-2"
                     name="method"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="link" id="link" />
+                      <RadioGroupItem value="LINK" id="link" />
                       <Label htmlFor="link" className="flex items-center">
                         <Link className="mr-2 h-4 w-4" />
                         Create shareable link
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="email" id="email" />
+                      <RadioGroupItem value="EMAIL" id="email" />
                       <Label htmlFor="email" className="flex items-center">
                         <Mail className="mr-2 h-4 w-4" />
                         Send via email
@@ -330,7 +414,7 @@ export default function UploadPage() {
                   </RadioGroup>
                 </div>
 
-                {method === "email" && (
+                {method === "EMAIL" && (
                   <div className="space-y-2">
                     <Label htmlFor="email-input">Recipient Email</Label>
                     <Input
@@ -340,7 +424,7 @@ export default function UploadPage() {
                       placeholder="recipient@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required={method === "email"}
+                      required={method === "EMAIL"}
                     />
                   </div>
                 )}
@@ -357,7 +441,7 @@ export default function UploadPage() {
                       htmlFor="lock-to-user"
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      Lock file to specific user
+                      Lock files to specific user
                     </Label>
                   </div>
 
@@ -376,7 +460,7 @@ export default function UploadPage() {
                         onChange={(e) => setLockToUser(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Only this user will be able to access the file
+                        Only this user will be able to access the files
                       </p>
                     </div>
                   )}
@@ -392,14 +476,17 @@ export default function UploadPage() {
                 >
                   Reset
                 </Button>
-                <Button type="submit" disabled={!file || isUploading}>
+                <Button
+                  type="submit"
+                  disabled={files.length === 0 || isUploading}
+                >
                   {isUploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Uploading...
                     </>
                   ) : (
-                    <>Upload File</>
+                    <>Upload Files</>
                   )}
                 </Button>
               </div>

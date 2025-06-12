@@ -1,11 +1,13 @@
 "use client";
-
-import type React from "react";
-import type { File as PrismaFile, FileSession } from "@prisma/client";
+import type {
+  File as PrismaFile,
+  FileSession,
+  FileSessionType,
+} from "@prisma/client";
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,11 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { authenticateForSession } from "./actions";
 import {
   Download,
   File,
@@ -35,12 +34,19 @@ import {
   CheckCircle2,
   Loader2,
   Files,
+  PackageOpen,
 } from "lucide-react";
-import { toast } from "sonner";
 
 // Types for our component state
 interface SessionWithFiles extends FileSession {
   files: PrismaFile[];
+  user: {
+    email: string;
+  };
+  allowList: {
+    id: string;
+    email: string;
+  }[];
 }
 
 export default function SessionPage() {
@@ -52,123 +58,124 @@ export default function SessionPage() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isDownloading, setIsDownloading] = useState<Record<string, boolean>>(
     {}
   );
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+
+  // Simulated user from Clerk
+  const [currentUser, setCurrentUser] = useState<{ email: string } | null>(
+    null
+  );
 
   useEffect(() => {
+    // Simulate getting the current user from Clerk
+    // In a real app, this would use Clerk's hooks or API
+    setCurrentUser({ email: "user@example.com" });
+
     async function loadSession() {
       try {
-        // In a real app, this would be an API call
+        // In a real app, this would be a Prisma query
         // For demo purposes, we'll simulate fetching the session
-        const response = await fetch(`/api/sessions/${sessionId}`);
 
-        if (!response.ok) {
-          throw new Error("Failed to load session");
-        }
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-        const data = await response.json();
-        setSession(data);
-
-        // If session is not locked, consider the user authenticated
-        if (data && !data.isLocked) {
-          setIsAuthenticated(true);
+        // Mock data based on sessionId
+        if (sessionId === "demo-session") {
+          setSession({
+            id: "demo-session",
+            userId: "user123",
+            type: "LINK" as FileSessionType,
+            isLocked: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            user: {
+              email: "uploader@example.com",
+            },
+            allowList: [],
+            files: [
+              {
+                id: "file1",
+                name: "document.pdf",
+                type: "application/pdf",
+                size: 2.4 * 1024 * 1024,
+                URL: "/storage/demo-session/document.pdf",
+                fileSessionId: "demo-session",
+                metadata: null,
+              },
+              {
+                id: "file2",
+                name: "image.jpg",
+                type: "image/jpeg",
+                size: 1.2 * 1024 * 1024,
+                URL: "/storage/demo-session/image.jpg",
+                fileSessionId: "demo-session",
+                metadata: null,
+              },
+            ],
+          });
+        } else if (sessionId === "locked-session") {
+          setSession({
+            id: "locked-session",
+            userId: "user123",
+            type: "LINK" as FileSessionType,
+            isLocked: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            user: {
+              email: "uploader@example.com",
+            },
+            allowList: [
+              { id: "allowed1", email: "user@example.com" },
+              { id: "allowed2", email: "another@example.com" },
+            ],
+            files: [
+              {
+                id: "file3",
+                name: "confidential.docx",
+                type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                size: 3.7 * 1024 * 1024,
+                URL: "/storage/locked-session/confidential.docx",
+                fileSessionId: "locked-session",
+                metadata: null,
+              },
+              {
+                id: "file4",
+                name: "secret.pdf",
+                type: "application/pdf",
+                size: 1.8 * 1024 * 1024,
+                URL: "/storage/locked-session/secret.pdf",
+                fileSessionId: "locked-session",
+                metadata: null,
+              },
+            ],
+          });
+        } else {
+          setSession(null);
         }
       } catch (err) {
         setError("Failed to load file information. Please try again.");
-        toast("Error loading session");
+        toast("Failed to load file information");
       } finally {
         setLoading(false);
       }
     }
 
-    // Simulate API response for demo
-    setTimeout(() => {
-      // Mock data based on sessionId
-      if (sessionId === "demo-session") {
-        setSession({
-          id: "demo-session",
-          userId: "user123",
-          type: "LINK",
-          isLocked: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          files: [
-            {
-              id: "file1",
-              name: "document.pdf",
-              type: "application/pdf",
-              size: 2.4 * 1024 * 1024,
-              URL: "/storage/demo-session/document.pdf",
-              fileSessionId: "demo-session",
-              metadata: null,
-            },
-            {
-              id: "file2",
-              name: "image.jpg",
-              type: "image/jpeg",
-              size: 1.2 * 1024 * 1024,
-              URL: "/storage/demo-session/image.jpg",
-              fileSessionId: "demo-session",
-              metadata: null,
-            },
-          ],
-        });
-        setIsAuthenticated(true);
-      } else if (sessionId === "locked-session") {
-        setSession({
-          id: "locked-session",
-          userId: "user123",
-          type: "LINK",
-          isLocked: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          files: [
-            {
-              id: "file3",
-              name: "confidential.docx",
-              type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              size: 3.7 * 1024 * 1024,
-              URL: "/storage/locked-session/confidential.docx",
-              fileSessionId: "locked-session",
-              metadata: null,
-            },
-          ],
-        });
-      } else {
-        setSession(null);
-      }
-      setLoading(false);
-    }, 1000);
-  }, [sessionId, toast]);
+    loadSession();
+  }, [sessionId]);
 
-  const handleAuthenticate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Check if the current user has access to the session
+  const hasAccess = () => {
+    if (!session || !currentUser) return false;
 
-    if (!session) return;
+    // If session is not locked, anyone has access
+    if (!session.isLocked) return true;
 
-    setIsAuthenticating(true);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      formData.append("sessionId", sessionId);
-
-      const result = await authenticateForSession(formData);
-
-      if (result.success) {
-        setIsAuthenticated(true);
-        toast("Authentication Successful");
-      } else {
-        toast("Authentication Failed: " + result.message);
-      }
-    } catch (err) {
-      toast("Error during authentication: " + (err as Error).message);
-    } finally {
-      setIsAuthenticating(false);
-    }
+    // If session is locked, check if the current user is in the allowList
+    return session.allowList.some(
+      (user) => user.email.toLowerCase() === currentUser.email.toLowerCase()
+    );
   };
 
   const handleDownload = (fileId: string) => {
@@ -181,10 +188,24 @@ export default function SessionPage() {
       // In a real app, this would trigger the actual file download
       const file = session.files.find((f) => f.id === fileId);
       if (file) {
-        toast("Downloading " + file.name);
+        toast(`${file.name} is being downloaded`);
       }
       setIsDownloading((prev) => ({ ...prev, [fileId]: false }));
     }, 1500);
+  };
+
+  const handleDownloadAll = () => {
+    if (!session) return;
+
+    setIsDownloadingAll(true);
+
+    // Simulate download delay
+    setTimeout(() => {
+      toast(
+        `${session.files.length} files are being downloaded as a zip archive`
+      );
+      setIsDownloadingAll(false);
+    }, 2000);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -207,6 +228,16 @@ export default function SessionPage() {
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
+  };
+
+  // Calculate total size of all files
+  const getTotalSize = (): string => {
+    if (!session) return "0 B";
+    const totalBytes = session.files.reduce(
+      (total, file) => total + file.size,
+      0
+    );
+    return formatFileSize(totalBytes);
   };
 
   // Render loading state
@@ -283,61 +314,46 @@ export default function SessionPage() {
     );
   }
 
-  // Render authentication form if session is locked and user is not authenticated
-  if (session.isLocked && !isAuthenticated) {
+  // Render access denied state if the session is locked and the user doesn't have access
+  if (session.isLocked && !hasAccess()) {
     return (
       <section className="w-screen h-screen flex justify-center items-center flex-col">
         <div className="container max-w-3xl py-10 px-4 md:px-6">
-          <Alert className="mb-6">
+          <Alert variant="destructive" className="mb-6">
             <Lock className="h-4 w-4" />
-            <AlertTitle>Authentication Required</AlertTitle>
+            <AlertTitle>Access Denied</AlertTitle>
             <AlertDescription>
-              These files are protected and require authentication to access.
+              These files are locked and only accessible to specific users.
+              Please sign in with an authorized email address.
             </AlertDescription>
           </Alert>
 
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>Access Files</CardTitle>
+              <CardTitle>Access Denied</CardTitle>
               <CardDescription>
-                These files are locked to specific users. Please enter your
-                email to verify access.
+                You don't have permission to access these files. Please sign in
+                with an authorized email address.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form
-                id="auth-form"
-                onSubmit={handleAuthenticate}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="email">Your Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </form>
+              <p className="text-muted-foreground">
+                If you believe you should have access, please contact the person
+                who shared these files with you.
+              </p>
+              {currentUser && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  You are currently signed in as{" "}
+                  <span className="font-medium">{currentUser.email}</span>
+                </p>
+              )}
             </CardContent>
             <CardFooter>
               <Button
-                type="submit"
-                form="auth-form"
-                disabled={isAuthenticating}
+                variant="outline"
+                onClick={() => (window.location.href = "/")}
               >
-                {isAuthenticating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  <>Verify Access</>
-                )}
+                Return to Home
               </Button>
             </CardFooter>
           </Card>
@@ -350,7 +366,7 @@ export default function SessionPage() {
   return (
     <section className="w-screen h-screen flex justify-center items-center flex-col">
       <div className="container max-w-3xl py-10 px-4 md:px-6">
-        {session.isLocked && (
+        {session.isLocked && hasAccess() && (
           <Alert className="mb-6">
             <CheckCircle2 className="h-4 w-4" />
             <AlertTitle>Access Granted</AlertTitle>
@@ -362,11 +378,32 @@ export default function SessionPage() {
 
         <Card className="w-full">
           <CardHeader>
-            <CardTitle>Shared Files</CardTitle>
-            <CardDescription>
-              {session.files.length} file{session.files.length !== 1 ? "s" : ""}{" "}
-              shared via FilerMan
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <CardTitle>Shared Files</CardTitle>
+                <CardDescription>
+                  {session.files.length} file
+                  {session.files.length !== 1 ? "s" : ""} shared via FilerMan
+                </CardDescription>
+              </div>
+              <Button
+                onClick={handleDownloadAll}
+                disabled={isDownloadingAll}
+                className="w-full sm:w-auto"
+              >
+                {isDownloadingAll ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Preparing...
+                  </>
+                ) : (
+                  <>
+                    <PackageOpen className="mr-2 h-4 w-4" />
+                    Download All
+                  </>
+                )}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -377,10 +414,13 @@ export default function SessionPage() {
                 <div>
                   <p className="font-medium">
                     {session.files.length} file
-                    {session.files.length !== 1 ? "s" : ""}
+                    {session.files.length !== 1 ? "s" : ""} • {getTotalSize()}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Shared on {formatDate(session.createdAt)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Shared by {session.user.email}
                   </p>
                 </div>
               </div>
@@ -447,13 +487,18 @@ export default function SessionPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               onClick={() => (window.location.href = "/")}
             >
               Return to Home
             </Button>
+            {currentUser && (
+              <p className="text-sm text-muted-foreground self-center">
+                Signed in as {currentUser.email}
+              </p>
+            )}
           </CardFooter>
         </Card>
       </div>
