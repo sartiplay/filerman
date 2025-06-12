@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  externalId  String   @unique
+  email       String   @unique
+
+  FileSessions FileSession[]
+  allowedFileSession FileSession[] @relation("FileSessionAllowList")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum FileSessionType {
+  EMAIL
+  LINK
+}
+
+model File {
+  id        String   @id @default(cuid())
+  URL      String   @unique
+
+  name    String
+  type    String
+
+  size    Float
+  metadata Json?
+
+  fileSessionId String
+  FileSession FileSession? @relation(fields: [fileSessionId], references: [id])
+}
+
+model FileSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  type      FileSessionType @default(LINK)
+
+  isLocked Boolean @default(false)  
+  allowList User[] @relation("FileSessionAllowList")
+
+  files File[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,102 +1,169 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Lock, Mail, Share2, Upload } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 border-b border-border">
+        <div className="container px-4 md:px-6 space-y-10 xl:space-y-16">
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
+            <div className="space-y-4">
+              <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
+                Simple. Secure. Fast.
+              </div>
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-foreground">
+                Share files with anyone, anywhere
+              </h1>
+              <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                FilerMan makes it easy to upload, share, and manage your files.
+                Create shareable links or send files directly to email
+                addresses.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button size="lg" asChild>
+                  <Link href="/upload">
+                    Start uploading <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <Link href="/about">Learn more</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="relative h-[350px] w-full overflow-hidden rounded-xl bg-muted">
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                <img
+                  src="/placeholder.svg?height=350&width=600"
+                  alt="FilerMan dashboard preview"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* Features Section */}
+      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32 bg-muted/50">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-foreground">
+                Everything you need to share files
+              </h2>
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                FilerMan provides all the tools you need to securely share your
+                files with anyone, anywhere.
+              </p>
+            </div>
+          </div>
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 pt-12">
+            <div className="flex flex-col items-center space-y-2 rounded-lg border border-border p-6 shadow-sm">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Upload className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">Easy Upload</h3>
+              <p className="text-sm text-muted-foreground text-center">
+                Drag and drop files or select them from your device.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-2 rounded-lg border border-border p-6 shadow-sm">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Share2 className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
+                Shareable Links
+              </h3>
+              <p className="text-sm text-muted-foreground text-center">
+                Generate links to share your files with anyone.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-2 rounded-lg border border-border p-6 shadow-sm">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Mail className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
+                Email Delivery
+              </h3>
+              <p className="text-sm text-muted-foreground text-center">
+                Send files directly to email addresses.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-2 rounded-lg border border-border p-6 shadow-sm">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
+                Secure Access
+              </h3>
+              <p className="text-sm text-muted-foreground text-center">
+                Lock files to specific users for enhanced security.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="w-full flex justify-center items-center flex-col py-12 md:py-24 lg:py-32">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-foreground">
+                Ready to start sharing?
+              </h2>
+              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Join thousands of users who trust FilerMan for their file
+                sharing needs.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button size="lg" asChild>
+                <Link href="/upload">
+                  Upload now <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/pricing">View pricing</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="w-full flex justify-center items-center flex-col py-6 border-t border-border mt-auto">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} FilerMan. All rights reserved.
+              </p>
+            </div>
+            <nav className="flex gap-4 sm:gap-6">
+              <Link
+                className="text-sm font-medium hover:underline underline-offset-4 text-muted-foreground"
+                href="/terms"
+              >
+                Terms
+              </Link>
+              <Link
+                className="text-sm font-medium hover:underline underline-offset-4 text-muted-foreground"
+                href="/privacy"
+              >
+                Privacy
+              </Link>
+              <Link
+                className="text-sm font-medium hover:underline underline-offset-4 text-muted-foreground"
+                href="/contact"
+              >
+                Contact
+              </Link>
+            </nav>
+          </div>
+        </div>
       </footer>
     </div>
   );
