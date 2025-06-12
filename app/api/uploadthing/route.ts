@@ -7,7 +7,7 @@ export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
   config: {
     callbackUrl: `${
-      process.env.BASE_URL || "http:localhost:3000"
+      process.env.BASE_URL || "http://localhost:3000"
     }/api/uploadthing/callback`, // The URL to redirect to after upload
   },
 
