@@ -39,7 +39,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "hsl(var(--primary))",
+          colorBackground: "hsl(var(--background))",
+          colorText: "hsl(var(--foreground))",
+          colorInputBackground: "hsl(var(--card))",
+          colorInputText: "hsl(var(--foreground))",
+        },
+      }}
+    >
       <NextSSRPlugin
         /**
          * The `extractRouterConfig` will extract **only** the route configs
