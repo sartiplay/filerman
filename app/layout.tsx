@@ -39,7 +39,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          // Clerk doesn't accept CSS variables here, so we
+          // approximate our Tailwind palette using hex colors
+          colorPrimary: "#4f46e5", // tailwind indigo-600
+          colorBackground: "#ffffff",
+          colorText: "#1f2937", // tailwind gray-800
+          colorInputBackground: "#ffffff",
+          colorInputText: "#1f2937",
+        },
+      }}
+    >
       <NextSSRPlugin
         /**
          * The `extractRouterConfig` will extract **only** the route configs
