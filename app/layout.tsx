@@ -42,29 +42,16 @@ export default function RootLayout({
   return (
     <ClerkProvider
       appearance={{
-        userProfile: {
-          variables: {
-            colorBackground: "#101010",
-            colorInputBackground: "#1d1d1d",
-            colorInputText: "#f3f3f3",
-            colorText: "#f3f3f3",
-            colorTextSecondary: "#4E2A84",
-            colorPrimary: "#f3f3f3",
-            colorTextOnPrimaryBackground: "#f3f3f3",
-            colorNeutral: "#f3f3f3",
-          },
-        },
-        userButton: {
-          variables: {
-            colorBackground: "#101010",
-            colorInputBackground: "#1d1d1d",
-            colorInputText: "#f3f3f3",
-            colorText: "#f3f3f3",
-            colorTextSecondary: "#4E2A84",
-            colorPrimary: "#f3f3f3",
-            colorTextOnPrimaryBackground: "#f3f3f3",
-            colorNeutral: "#f3f3f3",
-          },
+        variables: {
+          colorBackground: "#262626",
+          colorText: "#e5e5e5",
+          colorTextOnPrimaryBackground: "#e5e5e5",
+          colorPrimary: "#3b82f6",
+          colorTextSecondary: "#e5e5e5",
+          colorInputBackground: "#262626",
+          colorInputText: "#e5e5e5",
+          colorNeutral: "#e5e5e5",
+          colorDanger: "red",
         },
       }}
     >

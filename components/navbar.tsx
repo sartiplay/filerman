@@ -10,8 +10,25 @@ export default function Navbar() {
         <div className="">
           <SignedIn>
             <UserButton
-              userProfileMode="navigation"
-              userProfileUrl="/profile"
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: {
+                    width: "30px",
+                    height: "30px",
+                  },
+                },
+                variables: {
+                  colorBackground: "#262626",
+                  colorText: "#e5e5e5",
+                  colorTextOnPrimaryBackground: "#e5e5e5",
+                  colorPrimary: "#3b82f6",
+                  colorTextSecondary: "#e5e5e5",
+                  colorInputBackground: "#262626",
+                  colorInputText: "#e5e5e5",
+                  colorNeutral: "#e5e5e5",
+                  colorDanger: "red",
+                },
+              }}
             />
           </SignedIn>
           <SignedOut>
