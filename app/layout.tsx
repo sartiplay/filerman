@@ -42,29 +42,14 @@ export default function RootLayout({
   return (
     <ClerkProvider
       appearance={{
-        userProfile: {
-          variables: {
-            colorBackground: "#101010",
-            colorInputBackground: "#1d1d1d",
-            colorInputText: "#f3f3f3",
-            colorText: "#f3f3f3",
-            colorTextSecondary: "#4E2A84",
-            colorPrimary: "#f3f3f3",
-            colorTextOnPrimaryBackground: "#f3f3f3",
-            colorNeutral: "#f3f3f3",
-          },
-        },
-        userButton: {
-          variables: {
-            colorBackground: "#101010",
-            colorInputBackground: "#1d1d1d",
-            colorInputText: "#f3f3f3",
-            colorText: "#f3f3f3",
-            colorTextSecondary: "#4E2A84",
-            colorPrimary: "#f3f3f3",
-            colorTextOnPrimaryBackground: "#f3f3f3",
-            colorNeutral: "#f3f3f3",
-          },
+        variables: {
+          // Clerk doesn't accept CSS variables here, so we
+          // approximate our Tailwind palette using hex colors
+          colorPrimary: "#4f46e5", // tailwind indigo-600
+          colorBackground: "#ffffff",
+          colorText: "#1f2937", // tailwind gray-800
+          colorInputBackground: "#ffffff",
+          colorInputText: "#1f2937",
         },
       }}
     >
